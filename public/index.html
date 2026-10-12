@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Star Shop</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#ff4fa3">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="icon" type="image/png" href="/icon-192.png">
+
+<!-- iPhone "Add to Home Screen" support -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Star Shop">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --pink:#ff4fa3; --pink-d:#d81b7f; --pink-l:#ffd1ea; --pink-xl:#fff0f8;
+    --gold:#ffd84d; --ink:#7a1650;
+    --safe-t: env(safe-area-inset-top, 0px);
+    --safe-b: env(safe-area-inset-bottom, 0px);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;height:100%}
+  body{
+    font-family:"Quicksand",system-ui,-apple-system,sans-serif;
+    color:var(--ink);
+    background:linear-gradient(160deg,#ffb3dc 0%,#ff6fb8 45%,#ff9fd2 100%) fixed;
+    overflow-x:hidden;
+    -webkit-user-select:none;user-select:none;
+  }
+  /* ✨ glitter layers */
+  body::before,body::after{
+    content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+    background-image:
+      radial-gradient(circle,#fff 0 1.2px,transparent 1.6px),
+      radial-gradient(circle,#fff8c6 0 1px,transparent 1.5px),
+      radial-gradient(circle,#fff 0 .8px,transparent 1.2px);
+    background-size:63px 71px,97px 89px,41px 53px;
+    background-position:0 0,23px 31px,11px 7px;
+    animation:twinkle 2.6s ease-in-out infinite;
+  }
+  body::after{
+    background-size:79px 67px,53px 61px,109px 97px;
+    background-position:30px 12px,5px 40px,60px 20px;
+    animation-duration:3.7s;animation-delay:-1.3s;
+  }
+  @keyframes twinkle{0%,100%{opacity:.25}50%{opacity:1}}
+  .sparkle{position:fixed;z-index:1;pointer-events:none;animation:floaty linear infinite;opacity:.0}
+  @keyframes floaty{
+    0%{transform:translateY(0) scale(.5) rotate(0);opacity:0}
+    15%{opacity:.9}
+    100%{transform:translateY(-110vh) scale(1.1) rotate(200deg);opacity:0}
+  }
+  @media (prefers-reduced-motion:reduce){body::before,body::after,.sparkle{animation:none}}
+
+  .screen{position:relative;z-index:2;min-height:100%;padding:calc(var(--safe-t) + 14px) 14px 14px;display:none}
+  .screen.active{display:block}
+
+  h1,h2{font-family:"Pacifico",cursive;font-weight:400;margin:0}
+  .glitter-text{
+    background:linear-gradient(90deg,#fff,#ffe6f4,#fff3a8,#fff,#ffd1ea,#fff);
+    background-size:300% 100%;
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+    animation:shimmer 4s linear infinite;
+    filter:drop-shadow(0 2px 3px rgba(150,10,90,.45));
+  }
+  @keyframes shimmer{to{background-position:300% 0}}
+
+  /* ---- welcome ---- */
+  #welcome{text-align:center;padding-top:calc(var(--safe-t) + 8vh)}
+  #welcome h1{font-size:3rem;line-height:1.1}
+  #welcome p{color:#fff;font-weight:700;text-shadow:0 1px 3px rgba(150,10,90,.5);margin:10px 0 28px}
+  .bigstar{font-size:4rem;animation:bob 2.2s ease-in-out infinite;display:inline-block;filter:drop-shadow(0 4px 6px rgba(150,10,90,.4))}
+  @keyframes bob{50%{transform:translateY(-8px) rotate(8deg) scale(1.08)}}
+  .pick{
+    display:block;width:100%;max-width:340px;margin:16px auto;padding:22px;
+    font:700 1.7rem "Quicksand",sans-serif;color:#fff;border:3px solid #fff;border-radius:28px;
+    background:linear-gradient(135deg,#ff7cc4,#ff3d9a,#ff7cc4);background-size:200% 200%;
+    box-shadow:0 8px 0 var(--pink-d),0 14px 24px rgba(150,10,90,.35),inset 0 0 18px rgba(255,255,255,.5);
+    text-shadow:0 2px 3px rgba(150,10,90,.6);
+    animation:gradmove 5s ease infinite;
+  }
+  .pick:active{transform:translateY(6px);box-shadow:0 2px 0 var(--pink-d),0 6px 12px rgba(150,10,90,.35)}
+  @keyframes gradmove{50%{background-position:100% 100%}}
+
+  /* ---- app header ---- */
+  .topbar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
+  .topbar h2{font-size:1.7rem}
+  .switch{border:2px solid #fff;background:rgba(255,255,255,.25);color:#fff;border-radius:999px;padding:6px 12px;font:700 .8rem Quicksand,sans-serif}
+  .balance{
+    text-align:center;padding:16px;border-radius:26px;border:3px solid #fff;
+    background:linear-gradient(135deg,#fff,#ffe3f2);
+    box-shadow:0 6px 0 var(--pink-d),0 12px 20px rgba(150,10,90,.25);margin-bottom:16px;
+  }
+  .balance small{display:block;font-weight:700;letter-spacing:.08em;text-transform:uppercase;opacity:.7}
+  .balance .num{font-size:3rem;font-weight:700;line-height:1.1;color:var(--pink-d)}
+  .balance .num span{display:inline-block}
+  .bump{animation:bump .5s}
+  @keyframes bump{40%{transform:scale(1.35)}}
+
+  .tabcontent{padding-bottom:calc(86px + var(--safe-b))}
+  .tab{display:none}.tab.active{display:block}
+
+  .card{
+    background:rgba(255,255,255,.88);border:2.5px solid #fff;border-radius:22px;padding:14px;margin-bottom:14px;
+    box-shadow:0 6px 16px rgba(150,10,90,.2);
+  }
+  .card h3{margin:0 0 10px;font-size:1.05rem;color:var(--pink-d)}
+
+  .stepper{display:flex;align-items:center;justify-content:center;gap:10px;margin:6px 0 12px}
+  .stepper button{
+    width:52px;height:52px;border-radius:50%;border:2.5px solid #fff;color:#fff;font:700 1.8rem Quicksand,sans-serif;
+    background:linear-gradient(135deg,#ff8ccb,#ff3d9a);box-shadow:0 4px 0 var(--pink-d);
+  }
+  .stepper button:active{transform:translateY(3px);box-shadow:0 1px 0 var(--pink-d)}
+  .stepper input{
+    width:96px;text-align:center;font:700 2rem Quicksand,sans-serif;color:var(--pink-d);
+    border:3px solid var(--pink);border-radius:16px;padding:6px;background:#fff;-webkit-user-select:text;user-select:text
+  }
+  .chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:12px}
+  .chip{border:2px solid var(--pink);background:#fff;color:var(--pink-d);border-radius:999px;padding:6px 12px;font:700 .9rem Quicksand,sans-serif}
+  .chip:active{background:var(--pink-l)}
+
+  .btn{
+    display:block;width:100%;padding:14px;border-radius:18px;border:2.5px solid #fff;color:#fff;
+    font:700 1.1rem Quicksand,sans-serif;text-shadow:0 1px 2px rgba(150,10,90,.5);
+    background:linear-gradient(135deg,#ff7cc4,#ff3d9a);box-shadow:0 5px 0 var(--pink-d),0 8px 14px rgba(150,10,90,.25);
+  }
+  .btn:active{transform:translateY(4px);box-shadow:0 1px 0 var(--pink-d)}
+  .btn.small{display:inline-block;width:auto;padding:9px 14px;font-size:.95rem;border-radius:14px}
+  .btn.ghost{background:#fff;color:var(--pink-d);text-shadow:none;border-color:var(--pink);box-shadow:0 4px 0 var(--pink-l)}
+  .btn[disabled]{filter:grayscale(.7) opacity(.6);box-shadow:none}
+
+  .cat{margin-bottom:12px}
+  .cat:last-child{margin-bottom:0}
+  .cat .name{font-weight:700;margin-bottom:6px}
+  .cat .row{display:flex;flex-wrap:wrap;gap:8px}
+  .quick{
+    flex:1 1 90px;padding:12px 8px;border-radius:16px;border:2.5px solid #fff;color:#fff;
+    font:700 1.05rem Quicksand,sans-serif;text-shadow:0 1px 2px rgba(150,10,90,.5);
+    background:linear-gradient(135deg,#ffb04d,#ff4fa3);box-shadow:0 4px 0 var(--pink-d);
+  }
+  .quick:active{transform:translateY(3px);box-shadow:0 1px 0 var(--pink-d)}
+
+  /* shop */
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .item{
+    background:rgba(255,255,255,.9);border:2.5px solid #fff;border-radius:20px;padding:12px;text-align:center;
+    box-shadow:0 6px 14px rgba(150,10,90,.2);display:flex;flex-direction:column;justify-content:space-between;gap:8px
+  }
+  .item .emoji{font-size:2rem}
+  .item .iname{font-weight:700;line-height:1.2;min-height:2.4em;display:flex;align-items:center;justify-content:center}
+  .price{font-weight:700;color:var(--pink-d);font-size:1.15rem}
+
+  .row-item{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 0;border-bottom:1.5px dashed var(--pink-l)}
+  .row-item:last-child{border-bottom:0}
+  .row-item .meta{min-width:0}
+  .row-item .t{font-weight:700}
+  .row-item .s{font-size:.8rem;opacity:.7}
+  .pill{display:inline-block;border-radius:999px;padding:3px 10px;font-weight:700;font-size:.8rem}
+  .pill.pending{background:#fff3b0;color:#8a6a00}
+  .pill.approved{background:#c9f7d9;color:#0d7a3b}
+  .pill.declined{background:#ffd0d0;color:#a31b1b}
+  .actions{display:flex;gap:6px;flex-shrink:0}
+  .empty{text-align:center;opacity:.75;padding:10px}
+
+  /* bottom nav */
+  nav{
+    position:fixed;left:0;right:0;bottom:0;z-index:5;display:flex;gap:6px;
+    padding:8px 10px calc(8px + var(--safe-b));
+    background:rgba(255,255,255,.9);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+    border-top:3px solid #fff;box-shadow:0 -6px 18px rgba(150,10,90,.25);
+  }
+  nav button{
+    flex:1;position:relative;border:0;background:transparent;border-radius:16px;padding:8px 2px;
+    font:700 .72rem Quicksand,sans-serif;color:var(--ink);opacity:.7
+  }
+  nav button .ic{display:block;font-size:1.5rem}
+  nav button.active{opacity:1;background:linear-gradient(135deg,#ffd1ea,#ffb3dc);color:var(--pink-d)}
+  .badge{position:absolute;top:2px;right:18%;min-width:20px;height:20px;border-radius:10px;background:#ff2d55;color:#fff;font-size:.72rem;display:none;align-items:center;justify-content:center;padding:0 5px;border:2px solid #fff}
+
+  /* toast / modal / banner */
+  #toast{
+    position:fixed;left:50%;top:calc(var(--safe-t) + 12px);transform:translate(-50%,-150%);z-index:50;
+    background:#fff;color:var(--pink-d);font-weight:700;border:3px solid var(--pink);border-radius:18px;
+    padding:12px 16px;max-width:90%;text-align:center;transition:transform .35s cubic-bezier(.2,1.4,.4,1);box-shadow:0 8px 20px rgba(150,10,90,.35)
+  }
+  #toast.show{transform:translate(-50%,0)}
+  .overlay{position:fixed;inset:0;z-index:40;background:rgba(120,10,70,.45);display:flex;align-items:center;justify-content:center;padding:20px}
+  .modal{background:#fff;border:3px solid var(--pink);border-radius:26px;padding:20px;max-width:340px;width:100%;text-align:center;box-shadow:0 12px 30px rgba(0,0,0,.3)}
+  .modal p{font-size:1.1rem;font-weight:700;margin:0 0 16px}
+  .modal .two{display:flex;gap:10px}
+
+  #install{
+    position:fixed;left:10px;right:10px;bottom:calc(84px + var(--safe-b));z-index:30;display:none;
+    background:#fff;border:3px solid var(--pink);border-radius:22px;padding:14px;box-shadow:0 10px 26px rgba(150,10,90,.4)
+  }
+  #install.onwelcome{bottom:calc(16px + var(--safe-b))}
+  #install .ttl{font-weight:700;color:var(--pink-d);margin-bottom:6px}
+  #install .msg{font-size:.92rem;margin-bottom:10px;line-height:1.4}
+  #install .two{display:flex;gap:8px}
+  .demo{background:#fff3b0;color:#8a6a00;border-radius:12px;padding:6px 10px;font-size:.78rem;font-weight:700;text-align:center;margin-bottom:10px;display:none}
+
+  .fall{position:fixed;top:-40px;z-index:60;pointer-events:none;font-size:1.8rem;animation:fall 1.6s ease-in forwards}
+  @keyframes fall{to{transform:translateY(110vh) rotate(360deg)}}
+</style>
+</head>
+<body>
+
+<div id="toast"></div>
+
+<!-- ============ START SCREEN ============ -->
+<section id="welcome" class="screen active">
+  <div class="bigstar">⭐</div>
+  <h1 class="glitter-text" id="appTitle">Star Shop</h1>
+  <p>Who are you? 💖</p>
+  <button class="pick" data-who="Jelena">💗 Jelena</button>
+  <button class="pick" data-who="Nikola">💙 Nikola</button>
+</section>
+
+<!-- ============ MAIN APP ============ -->
+<section id="app" class="screen">
+  <div class="topbar">
+    <h2 class="glitter-text" id="hello"></h2>
+    <button class="switch" id="switchBtn">Switch 🔄</button>
+  </div>
+  <div class="demo" id="demo">Demo mode: not connected to the server, so data is only on this phone.</div>
+
+  <div class="balance">
+    <small>Your <span class="sn"></span></small>
+    <div class="num"><span id="bal">0</span> ⭐</div>
+  </div>
+
+  <div class="tabcontent">
+    <!-- STARS -->
+    <div class="tab active" id="tab-stars">
+      <div class="card">
+        <h3>⭐ Send <span class="osn"></span> to <span class="otherName"></span></h3>
+        <div class="stepper">
+          <button id="minus">−</button>
+          <input id="amt" type="number" inputmode="numeric" min="1" value="1">
+          <button id="plus">+</button>
+        </div>
+        <div class="chips">
+          <button class="chip" data-add="1">+1</button>
+          <button class="chip" data-add="5">+5</button>
+          <button class="chip" data-add="10">+10</button>
+          <button class="chip" data-add="50">+50</button>
+        </div>
+        <button class="btn" id="sendBtn">Send ⭐ to <span class="otherName"></span></button>
+      </div>
+      <div class="card" id="quickCard">
+        <h3>✨ Quick send</h3>
+        <div id="quickList"></div>
+      </div>
+    </div>
+
+    <!-- SHOP -->
+    <div class="tab" id="tab-shop">
+      <div class="card"><h3>🛍️ Your shop</h3>
+        <div style="font-size:.9rem">Tap an item to ask <b class="otherName"></b> for permission. Your stars are held until they decide.</div>
+      </div>
+      <div class="grid" id="shopGrid"></div>
+    </div>
+
+    <!-- REQUESTS -->
+    <div class="tab" id="tab-req">
+      <div class="card"><h3>🔔 Waiting for your OK</h3><div id="incoming"></div></div>
+      <div class="card"><h3>🎀 Your requests</h3><div id="mine"></div></div>
+    </div>
+
+    <!-- HISTORY -->
+    <div class="tab" id="tab-hist">
+      <div class="card"><h3>📜 History</h3><div id="history"></div></div>
+    </div>
+  </div>
+
+  <nav>
+    <button data-tab="stars" class="active"><span class="ic">⭐</span>Stars</button>
+    <button data-tab="shop"><span class="ic">🛍️</span>Shop</button>
+    <button data-tab="req"><span class="ic">🔔</span>Requests<span class="badge" id="badge">0</span></button>
+    <button data-tab="hist"><span class="ic">📜</span>History</button>
+  </nav>
+</section>
+
+<!-- ============ ADD TO HOME SCREEN BANNER ============ -->
+<div id="install">
+  <div class="ttl">💖 Add to your home screen</div>
+  <div class="msg" id="installMsg"></div>
+  <div class="two">
+    <button class="btn small" id="installYes">Add</button>
+    <button class="btn small ghost" id="installNo">Not now</button>
+  </div>
+</div>
+
+<script>
+// Shows a pink error box on screen if something breaks (instead of silently doing nothing)
+function showErr(m){var d=document.getElementById("err");if(!d){d=document.createElement("div");d.id="err";d.style.cssText="position:fixed;left:8px;right:8px;top:8px;z-index:99;background:#fff;color:#b00020;border:3px solid #ff4fa3;border-radius:14px;padding:10px;font:600 13px sans-serif;-webkit-user-select:text;user-select:text";document.body.appendChild(d);}d.textContent="Oops: "+m;}
+window.addEventListener("error",function(e){showErr(e.message+" ("+(e.filename||"").split("/").pop()+":"+e.lineno+")");});
+window.addEventListener("unhandledrejection",function(e){showErr(String(e.reason&&e.reason.message||e.reason));});
+</script>
+<script type="module">
+import { CONFIG } from "./config.js";
+import { PEOPLE, other, initialState, applyAction } from "./logic.mjs";
+
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+// Star name depends on who is looking. (A plain text value also still works.)
+const SN_LIST = CONFIG.starName;
+const starNameFor = (who) => (typeof SN_LIST === "string" ? SN_LIST : (SN_LIST[who] || "Stars"));
+
+let me = localStorage.getItem("me");
+if (!PEOPLE.includes(me)) me = null;
+let SN = starNameFor(me); // the current viewer's star name
+let state = initialState();
+let mode = "online"; // "online" = shared server, "local" = this phone only
+let lastJson = "";
+let seenLogId = null;
+let seenPending = null;
+let amount = 1;
+
+document.title = CONFIG.appTitle;
+$("#appTitle").textContent = CONFIG.appTitle;
+
+/* ---------- sparkles ---------- */
+for (let i = 0; i < 16; i++) {
+  const s = document.createElement("div");
+  s.className = "sparkle";
+  s.textContent = ["✨", "💖", "⭐", "✨"][i % 4];
+  s.style.left = Math.random() * 100 + "vw";
+  s.style.top = 60 + Math.random() * 50 + "vh";
+  s.style.fontSize = 10 + Math.random() * 16 + "px";
+  s.style.animationDuration = 9 + Math.random() * 10 + "s";
+  s.style.animationDelay = -Math.random() * 15 + "s";
+  document.body.appendChild(s);
+}
+
+/* ---------- helpers ---------- */
+let toastTimer;
+function toast(msg) {
+  const t = $("#toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove("show"), 3200);
+}
+function rain(emoji = "⭐", n = 14) {
+  for (let i = 0; i < n; i++) {
+    const e = document.createElement("div");
+    e.className = "fall";
+    e.textContent = emoji;
+    e.style.left = Math.random() * 95 + "vw";
+    e.style.animationDelay = Math.random() * 0.5 + "s";
+    document.body.appendChild(e);
+    setTimeout(() => e.remove(), 2400);
+  }
+}
+function ask(text, yes = "Yes 💖", no = "Cancel") {
+  return new Promise((resolve) => {
+    const o = document.createElement("div");
+    o.className = "overlay";
+    o.innerHTML = `<div class="modal"><p>${text}</p><div class="two">
+      <button class="btn ghost" data-r="0">${esc(no)}</button><button class="btn" data-r="1">${esc(yes)}</button></div></div>`;
+    o.addEventListener("click", (e) => {
+      const b = e.target.closest("[data-r]");
+      if (!b) return;
+      o.remove();
+      resolve(b.dataset.r === "1");
+    });
+    document.body.appendChild(o);
+  });
+}
+const ago = (ts) => {
+  const m = Math.round((Date.now() - ts) / 60000);
+  if (m < 1) return "just now";
+  if (m < 60) return m + " min ago";
+  const h = Math.round(m / 60);
+  if (h < 24) return h + " h ago";
+  return new Date(ts).toLocaleDateString();
+};
+
+/* ---------- data (server or local fallback) ---------- */
+async function load() {
+  try {
+    const r = await fetch("/api/state", { cache: "no-store" });
+    if (!r.ok) throw new Error("bad status");
+    const d = await r.json();
+    state = d.state;
+    mode = "online";
+  } catch {
+    mode = "local";
+    state = JSON.parse(localStorage.getItem("localState") || "null") || initialState();
+  }
+  $("#demo").style.display = mode === "local" ? "block" : "none";
+}
+
+async function act(action) {
+  if (mode === "online") {
+    try {
+      const r = await fetch("/api/state", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(action),
+      });
+      const d = await r.json();
+      if (d.state) state = d.state;
+      if (!d.ok) { toast("😕 " + d.error); render(true); return false; }
+      render(true);
+      return true;
+    } catch {
+      toast("📡 No connection, try again");
+      return false;
+    }
+  }
+  const res = applyAction(state, action);
+  localStorage.setItem("localState", JSON.stringify(state));
+  if (!res.ok) { toast("😕 " + res.error); return false; }
+  render(true);
+  return true;
+}
+
+/* ---------- screens ---------- */
+function showScreen(id) {
+  $$(".screen").forEach((s) => s.classList.toggle("active", s.id === id));
+  $("#install").classList.toggle("onwelcome", id === "welcome");
+  window.scrollTo(0, 0);
+}
+
+async function enter(who) {
+  me = who;
+  SN = starNameFor(me);
+  localStorage.setItem("me", me);
+  $("#hello").textContent = "Hi " + me + " 💖";
+  $$(".sn").forEach((e) => (e.textContent = SN));                  // my star name
+  $$(".osn").forEach((e) => (e.textContent = starNameFor(other(me)))); // the other person's star name (what I send)
+  $$(".otherName").forEach((e) => (e.textContent = other(me)));
+  buildQuick();
+  setAmount(1);
+  seenLogId = null;
+  seenPending = null;
+  lastJson = "";
+  showScreen("app");
+  await load();
+  render(true);
+}
+
+$$(".pick").forEach((b) => b.addEventListener("click", () => enter(b.dataset.who)));
+$("#switchBtn").addEventListener("click", () => {
+  localStorage.removeItem("me");
+  me = null;
+  showScreen("welcome");
+});
+
+/* ---------- tabs ---------- */
+$$("nav button").forEach((b) =>
+  b.addEventListener("click", () => {
+    $$("nav button").forEach((x) => x.classList.toggle("active", x === b));
+    $$(".tab").forEach((t) => t.classList.toggle("active", t.id === "tab-" + b.dataset.tab));
+    window.scrollTo(0, 0);
+  })
+);
+
+/* ---------- sending stars ---------- */
+function setAmount(n) {
+  amount = Math.max(1, Math.min(10000, Math.floor(n) || 1));
+  $("#amt").value = amount;
+}
+$("#minus").addEventListener("click", () => setAmount(amount - 1));
+$("#plus").addEventListener("click", () => setAmount(amount + 1));
+$("#amt").addEventListener("input", (e) => (amount = Math.max(1, Math.floor(Number(e.target.value)) || 1)));
+$("#amt").addEventListener("blur", () => setAmount(amount));
+$$(".chip").forEach((c) => c.addEventListener("click", () => setAmount(amount + Number(c.dataset.add))));
+
+async function sendStars(n, reason) {
+  const ONS = starNameFor(other(me)); // stars I send are called by the receiver's star name
+  const ok = await ask(`Send <b>${n} ⭐ ${esc(ONS)}</b> to ${esc(other(me))}${reason ? ` for <b>${esc(reason)}</b>` : ""}?`, "Send 💫");
+  if (!ok) return;
+  if (await act({ type: "send", from: me, to: other(me), amount: n, reason })) {
+    rain("⭐");
+    toast(`💫 Sent ${n} ${ONS} to ${other(me)}!`);
+  }
+}
+$("#sendBtn").addEventListener("click", () => sendStars(amount, ""));
+
+function buildQuick() {
+  const cats = CONFIG.quick[me] || [];
+  $("#quickCard").style.display = cats.length ? "block" : "none";
+  $("#quickList").innerHTML = cats
+    .map(
+      (c, i) => `<div class="cat"><div class="name">${esc(c.category)}</div><div class="row">
+      ${c.amounts.map((a) => `<button class="quick" data-c="${i}" data-a="${a}">${a} ⭐</button>`).join("")}</div></div>`
+    )
+    .join("");
+  $$(".quick").forEach((b) =>
+    b.addEventListener("click", () => sendStars(Number(b.dataset.a), cats[b.dataset.c].category))
+  );
+}
+
+/* ---------- shop ---------- */
+const EMOJIS = ["🎀", "💄", "🍭", "🧁", "👛", "🌸", "💎", "🦄", "👠", "🎁", "👑", "🏝️", "🚗"];
+
+function buildShop() {
+  const items = CONFIG.shop[me] || [];
+  const bal = state.stars[me];
+  $("#shopGrid").innerHTML = items
+    .map((it, i) => {
+      const can = bal >= it.cost;
+      return `<div class="item">
+        <div class="emoji">${EMOJIS[i % EMOJIS.length]}</div>
+        <div class="iname">${esc(it.name)}</div>
+        <div class="price">${it.cost} ⭐</div>
+        <button class="btn small" data-i="${i}" ${can ? "" : "disabled"}>${can ? "Buy 🛒" : "Need " + (it.cost - bal) + " more"}</button>
+      </div>`;
+    })
+    .join("");
+  $$("#shopGrid [data-i]").forEach((b) =>
+    b.addEventListener("click", async () => {
+      const it = items[b.dataset.i];
+      const ok = await ask(`Ask ${esc(other(me))} if you can buy <b>${esc(it.name)}</b> for <b>${it.cost} ⭐</b>?`, "Ask 🎀");
+      if (!ok) return;
+      if (await act({ type: "buy", buyer: me, item: it.name, cost: it.cost })) {
+        toast(`⏳ Waiting for ${other(me)} to say yes...`);
+      }
+    })
+  );
+}
+
+/* ---------- requests ---------- */
+function buildRequests() {
+  const inc = state.orders.filter((o) => o.status === "pending" && o.buyer !== me);
+  const mine = state.orders.filter((o) => o.buyer === me).slice(0, 25);
+
+  $("#incoming").innerHTML = inc.length
+    ? inc.map((o) => `<div class="row-item">
+        <div class="meta"><div class="t">${esc(o.buyer)} wants: ${esc(o.item)}</div><div class="s">${o.cost} ⭐ · ${ago(o.ts)}</div></div>
+        <div class="actions">
+          <button class="btn small" data-yes="${o.id}">Allow</button>
+          <button class="btn small ghost" data-no="${o.id}">No</button>
+        </div></div>`).join("")
+    : `<div class="empty">Nothing waiting 💤</div>`;
+
+  $("#mine").innerHTML = mine.length
+    ? mine.map((o) => `<div class="row-item">
+        <div class="meta"><div class="t">${esc(o.item)}</div><div class="s">${o.cost} ⭐ · ${ago(o.ts)}</div></div>
+        <span class="pill ${o.status}">${{ pending: "⏳ waiting", approved: "✅ allowed", declined: "❌ declined (refunded)" }[o.status]}</span>
+      </div>`).join("")
+    : `<div class="empty">No requests yet. Visit the shop! 🛍️</div>`;
+
+  $$("[data-yes]").forEach((b) => b.addEventListener("click", async () => {
+    if (await act({ type: "respond", id: Number(b.dataset.yes), by: me, approve: true })) toast("✅ Allowed!");
+  }));
+  $$("[data-no]").forEach((b) => b.addEventListener("click", async () => {
+    if (await act({ type: "respond", id: Number(b.dataset.no), by: me, approve: false })) toast("Declined, stars refunded");
+  }));
+
+  const badge = $("#badge");
+  badge.textContent = inc.length;
+  badge.style.display = inc.length ? "flex" : "none";
+}
+
+/* ---------- history ---------- */
+function buildHistory() {
+  $("#history").innerHTML = state.log.length
+    ? state.log.map((l) => {
+        let t;
+        if (l.type === "send") {
+          t = l.from === me
+            ? `You sent ${l.amount} ⭐ ${esc(starNameFor(l.to))} to ${esc(l.to)}`
+            : `${esc(l.from)} sent you ${l.amount} ⭐ ${esc(SN)}`;
+          if (l.reason) t += ` · ${esc(l.reason)}`;
+        } else {
+          t = l.from === me
+            ? `You bought ${esc(l.reason)} (−${l.amount} ⭐)`
+            : `${esc(l.from)} bought ${esc(l.reason)} (−${l.amount} ⭐)`;
+        }
+        return `<div class="row-item"><div class="meta"><div class="t">${t}</div><div class="s">${ago(l.ts)}</div></div></div>`;
+      }).join("")
+    : `<div class="empty">Nothing yet ✨</div>`;
+}
+
+/* ---------- render + notifications ---------- */
+let lastBal = null;
+function render(force = false) {
+  if (!me) return;
+  const json = JSON.stringify(state);
+  notify();
+  if (!force && json === lastJson) return;
+  lastJson = json;
+
+  const bal = state.stars[me];
+  const el = $("#bal");
+  el.textContent = bal;
+  if (lastBal !== null && lastBal !== bal) { el.classList.remove("bump"); void el.offsetWidth; el.classList.add("bump"); }
+  lastBal = bal;
+
+  buildShop();
+  buildRequests();
+  buildHistory();
+}
+
+function notify() {
+  const maxLog = state.log.reduce((m, l) => Math.max(m, l.id), 0);
+  const pendingIds = state.orders.filter((o) => o.status === "pending" && o.buyer !== me).map((o) => o.id);
+  if (seenLogId !== null) {
+    state.log.filter((l) => l.id > seenLogId && l.type === "send" && l.to === me).forEach((l) => {
+      toast(`💖 ${l.from} sent you ${l.amount} ${SN}!${l.reason ? " (" + l.reason + ")" : ""}`);
+      rain("⭐", 18);
+    });
+  }
+  if (seenPending !== null) {
+    state.orders.filter((o) => pendingIds.includes(o.id) && !seenPending.includes(o.id))
+      .forEach((o) => toast(`🛍️ ${o.buyer} wants to buy ${o.item}!`));
+  }
+  seenLogId = maxLog;
+  seenPending = pendingIds;
+}
+
+/* ---------- polling ---------- */
+setInterval(async () => {
+  if (!me || document.hidden) return;
+  await load();
+  render();
+}, 4000);
+document.addEventListener("visibilitychange", async () => {
+  if (!document.hidden && me) { await load(); render(); }
+});
+
+/* ---------- Add to Home Screen ---------- */
+const isStandalone = window.matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
+const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent) ||
+              (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+let deferredPrompt = null;
+const banner = $("#install");
+
+function showBanner(kind) {
+  if (isStandalone || localStorage.getItem("hideInstall") === "1") return;
+  if (kind === "ios") {
+    $("#installMsg").innerHTML = "Tap the <b>Share</b> button (the square with the arrow ⬆️) at the bottom or top of Safari, then choose <b>“Add to Home Screen”</b>.";
+    $("#installYes").style.display = "none";
+    $("#installNo").textContent = "Got it";
+  } else {
+    $("#installMsg").textContent = "Install Star Shop so it opens like a real app. ✨";
+    $("#installYes").style.display = "inline-block";
+    $("#installNo").textContent = "Not now";
+  }
+  banner.style.display = "block";
+}
+window.addEventListener("beforeinstallprompt", (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  showBanner("android");
+});
+$("#installYes").addEventListener("click", async () => {
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  await deferredPrompt.userChoice;
+  deferredPrompt = null;
+  banner.style.display = "none";
+});
+$("#installNo").addEventListener("click", () => {
+  banner.style.display = "none";
+  localStorage.setItem("hideInstall", "1");
+});
+window.addEventListener("appinstalled", () => (banner.style.display = "none"));
+if (isIOS) setTimeout(() => showBanner("ios"), 1500);
+
+if ("serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js").catch(() => {});
+
+/* ---------- start ---------- */
+if (me) enter(me);
+</script>
+</body>
+</html>
